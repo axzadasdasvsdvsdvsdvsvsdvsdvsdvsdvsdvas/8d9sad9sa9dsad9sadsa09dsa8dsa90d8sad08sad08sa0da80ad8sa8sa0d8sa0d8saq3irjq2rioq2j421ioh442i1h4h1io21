@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,21 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Big Walk Setup</title>
-
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-  <!-- background (wallpaper + blur + overlay) -->
+  <!-- bg overlay layers (wallpaper fica no CSS via body::before) -->
   <div class="bg" aria-hidden="true">
-    <div class="wallpaper"></div>
     <div class="vignette"></div>
     <div class="blob b1"></div>
     <div class="blob b2"></div>
     <div class="grain"></div>
   </div>
 
-  <!-- window chrome -->
   <header class="titlebar" role="banner">
     <div class="titlebar-left">
       <div class="appmark" aria-hidden="true">
@@ -46,7 +42,6 @@
   </header>
 
   <main class="shell">
-    <!-- left rail -->
     <aside class="rail" aria-label="Installer steps">
       <div class="rail-top">
         <section class="product">
@@ -114,18 +109,15 @@
       </div>
     </aside>
 
-    <!-- main panel -->
     <section class="panel" aria-label="Installer content">
       <div class="panel-inner">
-        <!-- WELCOME -->
-        <section class="view show" id="view-welcome" data-view="welcome" role="region" aria-label="Welcome">
+        <section class="view show" id="view-welcome" data-view="welcome">
           <div class="hero">
             <div class="hero-copy">
               <div class="eyebrow">Ready to install</div>
               <h1>Install Big Walk</h1>
               <p class="lead">
-                This is a beta build. Expect updates and occasional weirdness.
-                Choose install folder, optional shortcuts, and launch right after install.
+                This is a beta build. Choose install folder, optional shortcuts, and launch right after install.
               </p>
 
               <div class="cards">
@@ -157,7 +149,7 @@
               <div class="notice">
                 <div class="notice-dot"></div>
                 <div class="notice-text">
-                  Tip: you can keep the default folder and just hit <b>Install</b>.
+                  Tip: keep default folder and hit <b>Install</b>.
                 </div>
               </div>
             </div>
@@ -173,12 +165,9 @@
           </div>
         </section>
 
-        <!-- PATH -->
-        <section class="view" id="view-path" data-view="path" role="region" aria-label="Install Location">
+        <section class="view" id="view-path" data-view="path">
           <h2>Install location</h2>
-          <p class="muted">
-            Choose where Big Walk will be installed. You can move it later, but it’s easier to pick the right spot now.
-          </p>
+          <p class="muted">Choose where Big Walk will be installed.</p>
 
           <div class="field">
             <label class="field-label" for="installPath">Install folder</label>
@@ -187,9 +176,7 @@
                 value="C:\Program Files\Big Walk" />
               <button class="btn" type="button" id="btnBrowse">Browse</button>
             </div>
-            <div class="field-help muted">
-              Recommended: SSD. Avoid removable drives.
-            </div>
+            <div class="field-help muted">Recommended: SSD. Avoid removable drives.</div>
           </div>
 
           <div class="split">
@@ -217,28 +204,16 @@
 
             <div class="panel-card">
               <div class="panel-card-title">Summary</div>
-              <div class="kv">
-                <span class="k">Size</span>
-                <span class="v">2.4 GB</span>
-              </div>
-              <div class="kv">
-                <span class="k">Architecture</span>
-                <span class="v">x64</span>
-              </div>
-              <div class="kv">
-                <span class="k">Install for</span>
-                <span class="v">Current user</span>
-              </div>
+              <div class="kv"><span class="k">Size</span><span class="v">2.4 GB</span></div>
+              <div class="kv"><span class="k">Architecture</span><span class="v">x64</span></div>
+              <div class="kv"><span class="k">Install for</span><span class="v">Current user</span></div>
               <div class="divider"></div>
-              <div class="muted small">
-                You can change these later in settings.
-              </div>
+              <div class="muted small">You can change these later.</div>
             </div>
           </div>
         </section>
 
-        <!-- INSTALL -->
-        <section class="view" id="view-install" data-view="install" role="region" aria-label="Install">
+        <section class="view" id="view-install" data-view="install">
           <h2>Installing</h2>
           <p class="muted" id="installStatus">Preparing…</p>
 
@@ -267,19 +242,14 @@
             <pre class="log mono" id="logBox"></pre>
           </div>
 
-          <div class="muted small" style="margin-top:14px;">
-            Do not close the installer during installation.
-          </div>
+          <div class="muted small" style="margin-top:14px;">Do not close the installer during installation.</div>
         </section>
 
-        <!-- FINISH -->
-        <section class="view" id="view-finish" data-view="finish" role="region" aria-label="Finish">
+        <section class="view" id="view-finish" data-view="finish">
           <div class="finish">
             <div class="finish-badge">✔</div>
             <h2>Installation complete</h2>
-            <p class="muted">
-              Big Walk was successfully installed.
-            </p>
+            <p class="muted">Big Walk was successfully installed.</p>
 
             <div class="panel-card" style="margin-top:12px;">
               <div class="panel-card-title">Next</div>
@@ -307,7 +277,6 @@
         </section>
       </div>
 
-      <!-- bottom bar -->
       <footer class="bbar" aria-label="Installer actions">
         <div class="bbar-left">
           <button class="btn ghost" type="button" id="btnCancel">Cancel</button>
@@ -319,7 +288,6 @@
         </div>
       </footer>
 
-      <!-- toast -->
       <div class="toast" id="toast" role="status" aria-live="polite">
         <div class="toast-dot"></div>
         <div class="toast-text" id="toastText">—</div>
@@ -328,12 +296,8 @@
   </main>
 
   <script>
-    // --- electron ipc (nodeIntegration=true + contextIsolation=false)
     let ipc = null;
-    try {
-      const { ipcRenderer } = require('electron');
-      ipc = ipcRenderer;
-    } catch (_) {}
+    try { ipc = require('electron').ipcRenderer; } catch (_) {}
 
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -373,16 +337,88 @@
 
       const idx = state.steps.indexOf(step);
       $('#btnBack').disabled = (idx === 0) || state.installing;
-      $('#btnCancel').disabled = state.installing;
+      $('#btnCancel').disabled = false;
       $('#btnNext').textContent = step === 'finish' ? 'Close' : (step === 'install' ? 'Installing…' : 'Next');
       $('#btnNext').disabled = state.installing && step === 'install';
 
       $('#finalPath').textContent = $('#installPath')?.value || '—';
     }
 
+    function log(line) {
+      const box = $('#logBox');
+      box.textContent += line + '\n';
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function setProgress(pct, meta, speed) {
+      state.progress = Math.max(0, Math.min(100, pct));
+      $('#progressPct').textContent = state.progress.toFixed(0) + '%';
+      $('#progressFill').style.width = state.progress + '%';
+      $('#progressMeta').textContent = meta || '';
+      $('#progressSpeed').textContent = speed || '—';
+    }
+
+    function startInstall() {
+      if (state.installing) return;
+
+      state.installing = true;
+      state.installed = false;
+
+      $('#installStatus').textContent = 'Installing Big Walk…';
+      $('#logBox').textContent = '';
+      setProgress(0, 'Starting', '—');
+
+      toast('Installation started');
+      log('[setup] starting installer');
+      log('[setup] target: ' + ($('#installPath').value || 'unknown'));
+      log('[setup] preparing files…');
+
+      let phase = 0;
+
+      state.timer = setInterval(() => {
+        const bump = 2 + Math.random() * 6;
+        const next = Math.min(100, state.progress + bump);
+
+        if (phase === 0 && next > 18) { phase = 1; log('[setup] extracting package…'); }
+        else if (phase === 1 && next > 55) { phase = 2; log('[setup] copying files…'); }
+        else if (phase === 2 && next > 78) { phase = 3; log('[setup] creating shortcuts…'); }
+        else if (phase === 3 && next > 92) { phase = 4; log('[setup] finalizing…'); }
+
+        const speed = (60 + Math.random()*140).toFixed(0) + ' MB/s';
+        const meta =
+          next < 25 ? 'Preparing files' :
+          next < 60 ? 'Extracting / copying' :
+          next < 90 ? 'Writing to disk' :
+          'Finalizing';
+
+        setProgress(next, meta, speed);
+
+        if (Math.random() < 0.25) {
+          const items = ['writing chunk to disk','verifying hash','registering uninstall entry','checking prerequisites','optimizing assets'];
+          log('[setup] ' + items[(Math.random() * items.length) | 0] + '…');
+        }
+
+        if (next >= 100) {
+          clearInterval(state.timer);
+          state.timer = null;
+
+          state.installing = false;
+          state.installed = true;
+
+          log('[setup] done');
+          $('#installStatus').textContent = 'Done.';
+          toast('Installed successfully');
+
+          setStep('finish');
+          $('#btnNext').textContent = 'Close';
+        }
+      }, 230);
+    }
+
     function nextStep() {
       if (state.step === 'finish') {
-        if (ipc) ipc.send('win-close');
+        // fecha só a janela do installer
+        if (ipc) ipc.send('ui:win', 'close');
         else window.close();
         return;
       }
@@ -414,153 +450,45 @@
       if (prev) setStep(prev);
     }
 
-    function log(line) {
-      const box = $('#logBox');
-      box.textContent += line + '\n';
-      box.scrollTop = box.scrollHeight;
-    }
+    function cancelAndHide() {
+      const ok = confirm('Do you really want to cancel? The background process will keep running.');
+      if (!ok) return;
 
-    function setProgress(pct, meta, speed) {
-      state.progress = Math.max(0, Math.min(100, pct));
-      $('#progressPct').textContent = state.progress.toFixed(0) + '%';
-      $('#progressFill').style.width = state.progress + '%';
-      $('#progressMeta').textContent = meta || '';
-      $('#progressSpeed').textContent = speed || '—';
-    }
+      // para a simulação se tiver rodando
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+      }
+      state.installing = false;
 
-    function startInstall() {
-      if (state.installing) return;
-
-      state.installing = true;
-      state.installed = false;
-
-      $('#btnNext').disabled = true;
-      $('#btnBack').disabled = true;
-      $('#btnCancel').disabled = false;
-      $('#installStatus').textContent = 'Installing Big Walk…';
-
-      $('#logBox').textContent = '';
-      setProgress(0, 'Starting', '—');
-
-      toast('Installation started');
-      log('[setup] starting installer');
-      log('[setup] target: ' + ($('#installPath').value || 'unknown'));
-      log('[setup] preparing files…');
-
-      let phase = 0;
-
-      state.timer = setInterval(() => {
-        const bump = 2 + Math.random() * 6;
-        const next = Math.min(100, state.progress + bump);
-
-        if (phase === 0 && next > 18) { phase = 1; log('[setup] extracting package…'); }
-        else if (phase === 1 && next > 55) { phase = 2; log('[setup] copying files…'); }
-        else if (phase === 2 && next > 78) { phase = 3; log('[setup] creating shortcuts…'); }
-        else if (phase === 3 && next > 92) { phase = 4; log('[setup] finalizing…'); }
-
-        const speed = (60 + Math.random()*140).toFixed(0) + ' MB/s';
-        const meta =
-          next < 25 ? 'Preparing files' :
-          next < 60 ? 'Extracting / copying' :
-          next < 90 ? 'Writing to disk' :
-          'Finalizing';
-
-        setProgress(next, meta, speed);
-
-        if (Math.random() < 0.25) {
-          const items = [
-            'writing chunk to disk',
-            'verifying hash',
-            'registering uninstall entry',
-            'checking prerequisites',
-            'optimizing assets'
-          ];
-          log('[setup] ' + items[(Math.random() * items.length) | 0] + '…');
-        }
-
-        if (next >= 100) {
-          clearInterval(state.timer);
-          state.timer = null;
-
-          state.installing = false;
-          state.installed = true;
-
-          log('[setup] done');
-          $('#installStatus').textContent = 'Done.';
-          toast('Installed successfully');
-
-          $('#btnNext').disabled = false;
-          $('#btnCancel').disabled = false;
-
-          setStep('finish');
-          $('#btnNext').textContent = 'Close';
-        }
-      }, 230);
+      // esconde todas as janelas (continua em bg)
+      if (ipc) ipc.send('ui:app', 'hideAll');
+      else window.close();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       $('#year').textContent = new Date().getFullYear();
 
       $$('.step').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.step)));
-
       $('#btnNext').addEventListener('click', nextStep);
       $('#btnBack').addEventListener('click', backStep);
 
-      $('#btnCancel').addEventListener('click', () => {
-        if (state.installing) {
-          const ok = confirm('Cancel installation?');
-          if (!ok) return;
+      // CANCEL: confirma e esconde as janelas
+      $('#btnCancel').addEventListener('click', cancelAndHide);
 
-          clearInterval(state.timer);
-          state.timer = null;
-          state.installing = false;
-          setProgress(0, 'Canceled', '—');
-          log('[setup] canceled by user');
-          toast('Canceled');
-          setStep('path');
-          return;
-        }
-
-        if (ipc) ipc.send('win-close');
-        else window.close();
-      });
-
-      $('#btnBrowse').addEventListener('click', async () => {
-        if (ipc && ipc.invoke) {
-          try {
-            const picked = await ipc.invoke('pick-install-dir');
-            if (picked) {
-              $('#installPath').value = picked;
-              toast('Folder selected');
-            }
-          } catch {
-            toast('Browse not available');
-          }
-        } else {
-          toast('Browse needs Electron IPC');
-        }
-      });
-
+      $('#btnBrowse').addEventListener('click', async () => toast('Browse needs Electron IPC'));
       $('#btnCopyLog').addEventListener('click', async () => {
-        const txt = $('#logBox').textContent;
-        try { await navigator.clipboard.writeText(txt); toast('Copied'); }
+        try { await navigator.clipboard.writeText($('#logBox').textContent); toast('Copied'); }
         catch { toast('Copy failed'); }
       });
+      $('#btnClearLog').addEventListener('click', () => { $('#logBox').textContent=''; toast('Cleared'); });
 
-      $('#btnClearLog').addEventListener('click', () => {
-        $('#logBox').textContent = '';
-        toast('Cleared');
-      });
-
-      // window buttons
+      // win buttons (se o inject do main não pegar, isso pega)
       $$('.winbtn').forEach(btn => {
         btn.addEventListener('click', () => {
           const a = btn.dataset.win;
           if (!ipc) return;
-
-          if (a === 'minimize') ipc.send('win-minimize');
-          if (a === 'maximize') ipc.send('win-maximize');
-          if (a === 'close') ipc.send('win-close');
+          ipc.send('ui:win', a);
         });
       });
 
