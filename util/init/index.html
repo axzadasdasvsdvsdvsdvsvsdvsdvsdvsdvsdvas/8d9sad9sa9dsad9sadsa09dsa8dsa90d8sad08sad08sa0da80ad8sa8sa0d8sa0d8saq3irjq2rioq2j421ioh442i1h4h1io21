@@ -1,139 +1,48 @@
+<!-- index.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- REMOVE o CSP problemático -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Big Walk Setup</title>
 
-  <!-- Fontes pra ficar bonitão -->
+  <!-- se tu quiser fonte externa, pode botar aqui, mas recomendo ficar no Segoe UI (nativo do windows) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
-  <style>
-    /* CSS CARREGADO PELO ELECTRON - REMOVE O LINK EXTERNO */
-    /* O CSS será injetado aqui pelo código JavaScript */
-    
-    /* Fontes e estilos base */
-    * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    body {
-        background: #0f0f1a;
-        color: #ffffff;
-        overflow: hidden;
-        height: 100vh;
-    }
-    
-    h1, h2, h3, .title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 600;
-        background: linear-gradient(45deg, #00ff88, #00ccff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .mono, code, pre, .log, input {
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 500;
-    }
-    
-    .btn, button {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 500;
-        background: linear-gradient(45deg, #2563eb, #7c3aed);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
-    }
-    
-    /* Efeitos visuais */
-    .orb {
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(0, 255, 136, 0.3) 0%, rgba(0, 204, 255, 0.2) 50%, transparent 70%);
-        filter: blur(60px);
-        animation: float 6s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
-    
-    /* Loading de fallback */
-    .loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: #0f0f1a;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    }
-    
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 3px solid rgba(0, 255, 136, 0.3);
-        border-top: 3px solid #00ff88;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-  </style>
+
+  <!-- o electron vai injetar o styles.css como <style> no teu loader -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-  <!-- Loading enquanto carrega -->
-  <div class="loading" id="loading">
-    <div class="loading-spinner"></div>
-    <div style="margin-top: 20px; color: #00ccff;">Carregando installer...</div>
+  <!-- background blobs -->
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="grain"></div>
   </div>
-  
-  <!-- window chrome (custom title bar) -->
+
+  <!-- window chrome -->
   <header class="titlebar" role="banner">
     <div class="titlebar-left">
       <div class="appmark" aria-hidden="true">
-        <div style="width: 32px; height: 32px; background: linear-gradient(45deg, #00ff88, #00ccff); border-radius: 8px;"></div>
+        <div class="appmark-inner"></div>
       </div>
       <div class="titlewrap">
         <div class="title">Big Walk Setup</div>
-        <div class="subtitle" style="color: #888;">Installer</div>
+        <div class="subtitle">Installer • Windows 10/11</div>
       </div>
     </div>
 
     <div class="titlebar-right" role="group" aria-label="Window controls">
-      <button class="winbtn" type="button" aria-label="Minimize" data-action="win:minimize">
+      <button class="winbtn" type="button" aria-label="Minimize" data-win="minimize" title="Minimize">
         <span aria-hidden="true">—</span>
       </button>
-      <button class="winbtn" type="button" aria-label="Maximize" data-action="win:maximize">
+      <button class="winbtn" type="button" aria-label="Maximize" data-win="maximize" title="Maximize">
         <span aria-hidden="true">▢</span>
       </button>
-      <button class="winbtn danger" type="button" aria-label="Close" data-action="win:close">
+      <button class="winbtn danger" type="button" aria-label="Close" data-win="close" title="Close">
         <span aria-hidden="true">✕</span>
       </button>
     </div>
@@ -143,135 +52,557 @@
     <!-- left rail -->
     <aside class="rail" aria-label="Installer steps">
       <div class="rail-top">
-        <div class="product">
-          <div class="product-name" style="color: #00ff88; font-size: 24px; font-weight: 700;">Big Walk</div>
-          <div class="product-meta">
-            <span class="pill" style="background: linear-gradient(45deg, #f59e0b, #fbbf24); color: black; padding: 2px 8px; border-radius: 12px; font-size: 12px;">BETA</span>
-            <span class="sep" aria-hidden="true">•</span>
-            <span class="muted" style="color: #888;">windows</span>
+        <section class="product">
+          <div class="product-head">
+            <div class="product-name">Big Walk</div>
+            <div class="pill">BETA</div>
           </div>
-        </div>
+          <div class="product-meta">
+            <div class="meta-row">
+              <span class="k">Version</span>
+              <span class="v" id="versionText">0.0.0-beta</span>
+            </div>
+            <div class="meta-row">
+              <span class="k">Publisher</span>
+              <span class="v">House House Studio</span>
+            </div>
+          </div>
+        </section>
 
         <nav class="steps" aria-label="Steps">
-          <button class="step active" type="button" id="stepWelcome" data-step="welcome" aria-current="step">
-            <span class="dot" aria-hidden="true"></span>
+          <button class="step active" type="button" data-step="welcome" aria-current="step">
+            <span class="dot"></span>
             <span class="label">Welcome</span>
             <span class="hint">Quick checks</span>
           </button>
 
-          <button class="step" type="button" id="stepPath" data-step="path">
-            <span class="dot" aria-hidden="true"></span>
-            <span class="label">Install Location</span>
+          <button class="step" type="button" data-step="path">
+            <span class="dot"></span>
+            <span class="label">Location</span>
             <span class="hint">Choose folder</span>
           </button>
 
-          <button class="step" type="button" id="stepInstall" data-step="install">
-            <span class="dot" aria-hidden="true"></span>
+          <button class="step" type="button" data-step="install">
+            <span class="dot"></span>
             <span class="label">Install</span>
             <span class="hint">Copying files</span>
           </button>
 
-          <button class="step" type="button" id="stepFinish" data-step="finish">
-            <span class="dot" aria-hidden="true"></span>
+          <button class="step" type="button" data-step="finish">
+            <span class="dot"></span>
             <span class="label">Finish</span>
             <span class="hint">Launch options</span>
           </button>
         </nav>
+
+        <section class="rail-card">
+          <div class="rail-card-title">System</div>
+          <div class="rail-card-grid">
+            <div class="kv">
+              <span class="k">Target</span>
+              <span class="v">x64</span>
+            </div>
+            <div class="kv">
+              <span class="k">Required space</span>
+              <span class="v" id="diskReq">~2.4 GB</span>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="rail-bottom">
-        <div class="rail-card">
-          <div class="rail-k">Version</div>
-          <div class="rail-v" id="versionText">0.0.0-beta</div>
-        </div>
-        <div class="rail-card">
-          <div class="rail-k">Publisher</div>
-          <div class="rail-v">House House Studio</div>
-        </div>
-        <div class="rail-fine" id="legalFine">
+        <div class="fineprint" id="legalFine">
           © <span id="year">2026</span> House House Studio. All rights reserved.
         </div>
       </div>
     </aside>
 
-    <!-- main content -->
+    <!-- main panel -->
     <section class="panel" aria-label="Installer content">
-      <!-- welcome -->
-      <div class="view show" id="viewWelcome" data-view="welcome" role="region" aria-label="Welcome">
-        <div class="hero">
-          <div class="hero-copy">
-            <h1>Install Big Walk</h1>
-            <p class="lead" style="color: #aaa; line-height: 1.6;">
-              This is a beta build. Expect updates, changes, and occasional weirdness.
-              You can change the install folder, create shortcuts, and start right after install.
-            </p>
+      <div class="panel-inner">
+        <!-- WELCOME -->
+        <section class="view show" id="view-welcome" data-view="welcome" role="region" aria-label="Welcome">
+          <div class="hero">
+            <div class="hero-copy">
+              <div class="eyebrow">Ready to install</div>
+              <h1>Install Big Walk</h1>
+              <p class="lead">
+                This is a beta build. Expect updates and occasional weirdness.
+                Choose install folder, optional shortcuts, and launch right after install.
+              </p>
 
-            <div class="checks">
-              <div class="check" style="display: flex; align-items: center; margin: 15px 0;">
-                <div class="check-icon" aria-hidden="true" style="background: linear-gradient(45deg, #00ff88, #00ccff); color: black; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">✔</div>
-                <div class="check-body">
-                  <div class="check-title">Disk space</div>
-                  <div class="check-sub muted"><span id="diskReq">~2.4 GB</span> required</div>
+              <div class="cards">
+                <div class="card">
+                  <div class="card-ico ok">✔</div>
+                  <div class="card-body">
+                    <div class="card-title">Disk space</div>
+                    <div class="card-sub"><span class="mono" id="diskReq2">~2.4 GB</span> required</div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-ico ok">✔</div>
+                  <div class="card-body">
+                    <div class="card-title">Permissions</div>
+                    <div class="card-sub">Standard user supported</div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-ico ok">✔</div>
+                  <div class="card-body">
+                    <div class="card-title">Integrity</div>
+                    <div class="card-sub">Installer package verified</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="check" style="display: flex; align-items: center; margin: 15px 0;">
-                <div class="check-icon" aria-hidden="true" style="background: linear-gradient(45deg, #00ff88, #00ccff); color: black; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">✔</div>
-                <div class="check-body">
-                  <div class="check-title">Permissions</div>
-                  <div class="check-sub muted">Standard user supported</div>
-                </div>
-              </div>
-
-              <div class="check" style="display: flex; align-items: center; margin: 15px 0;">
-                <div class="check-icon" aria-hidden="true" style="background: linear-gradient(45deg, #00ff88, #00ccff); color: black; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">✔</div>
-                <div class="check-body">
-                  <div class="check-title">Integrity</div>
-                  <div class="check-sub muted">Installer package verified</div>
+              <div class="notice">
+                <div class="notice-dot"></div>
+                <div class="notice-text">
+                  Tip: you can keep the default folder and just hit <b>Install</b>.
                 </div>
               </div>
             </div>
+
+            <div class="hero-art" aria-hidden="true">
+              <div class="hero-art-badge">
+                <div class="badge-title">Big Walk</div>
+                <div class="badge-sub">Beta installer</div>
+              </div>
+              <div class="hero-grid"></div>
+              <div class="hero-orb"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PATH -->
+        <section class="view" id="view-path" data-view="path" role="region" aria-label="Install Location">
+          <h2>Install location</h2>
+          <p class="muted">
+            Choose where Big Walk will be installed. You can move it later, but it’s easier to pick the right spot now.
+          </p>
+
+          <div class="field">
+            <label class="field-label" for="installPath">Install folder</label>
+            <div class="field-row">
+              <input class="input mono" id="installPath" type="text" spellcheck="false"
+                value="C:\Program Files\Big Walk" />
+              <button class="btn" type="button" id="btnBrowse">Browse</button>
+            </div>
+            <div class="field-help muted">
+              Recommended: SSD. Avoid removable drives.
+            </div>
           </div>
 
-          <div class="hero-art" aria-hidden="true">
-            <div class="orb"></div>
+          <div class="split">
+            <div class="panel-card">
+              <div class="panel-card-title">Shortcuts</div>
+
+              <label class="checkrow">
+                <input type="checkbox" id="optDesktop" checked />
+                <span class="checkui"></span>
+                <span class="checktext">Create Desktop shortcut</span>
+              </label>
+
+              <label class="checkrow">
+                <input type="checkbox" id="optStart" checked />
+                <span class="checkui"></span>
+                <span class="checktext">Add to Start Menu</span>
+              </label>
+
+              <label class="checkrow">
+                <input type="checkbox" id="optAutoUpdate" />
+                <span class="checkui"></span>
+                <span class="checktext">Enable auto-updates (recommended)</span>
+              </label>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-card-title">Summary</div>
+              <div class="kv">
+                <span class="k">Size</span>
+                <span class="v">2.4 GB</span>
+              </div>
+              <div class="kv">
+                <span class="k">Architecture</span>
+                <span class="v">x64</span>
+              </div>
+              <div class="kv">
+                <span class="k">Install for</span>
+                <span class="v">Current user</span>
+              </div>
+              <div class="divider"></div>
+              <div class="muted small">
+                You can change these later in settings.
+              </div>
+            </div>
           </div>
+        </section>
+
+        <!-- INSTALL -->
+        <section class="view" id="view-install" data-view="install" role="region" aria-label="Install">
+          <h2>Installing</h2>
+          <p class="muted" id="installStatus">Preparing…</p>
+
+          <div class="progress-card">
+            <div class="progress-top">
+              <div class="progress-label">Progress</div>
+              <div class="progress-pct" id="progressPct">0%</div>
+            </div>
+            <div class="progressbar">
+              <div class="progressfill" id="progressFill"></div>
+            </div>
+            <div class="progress-meta">
+              <span class="muted small" id="progressMeta">Waiting to start</span>
+              <span class="mono small" id="progressSpeed">—</span>
+            </div>
+          </div>
+
+          <div class="logwrap">
+            <div class="loghead">
+              <div class="logtitle">Details</div>
+              <div class="logactions">
+                <button class="btn ghost" type="button" id="btnCopyLog">Copy</button>
+                <button class="btn ghost" type="button" id="btnClearLog">Clear</button>
+              </div>
+            </div>
+            <pre class="log mono" id="logBox"></pre>
+          </div>
+
+          <div class="muted small" style="margin-top:14px;">
+            Do not close the installer during installation.
+          </div>
+        </section>
+
+        <!-- FINISH -->
+        <section class="view" id="view-finish" data-view="finish" role="region" aria-label="Finish">
+          <div class="finish">
+            <div class="finish-badge">✔</div>
+            <h2>Installation complete</h2>
+            <p class="muted">
+              Big Walk was successfully installed.
+            </p>
+
+            <div class="panel-card" style="margin-top:12px;">
+              <div class="panel-card-title">Next</div>
+
+              <label class="checkrow">
+                <input type="checkbox" id="optLaunch" checked />
+                <span class="checkui"></span>
+                <span class="checktext">Launch Big Walk</span>
+              </label>
+
+              <label class="checkrow">
+                <input type="checkbox" id="optOpenFolder" />
+                <span class="checkui"></span>
+                <span class="checktext">Open install folder</span>
+              </label>
+
+              <div class="divider"></div>
+
+              <div class="kv">
+                <span class="k">Installed to</span>
+                <span class="v mono" id="finalPath">C:\Program Files\Big Walk</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- bottom bar -->
+      <footer class="bbar" aria-label="Installer actions">
+        <div class="bbar-left">
+          <button class="btn ghost" type="button" id="btnCancel">Cancel</button>
         </div>
 
-        <div class="cta-row">
-          <button class="btn" style="padding: 12px 30px; font-size: 16px; margin-top: 30px;" onclick="startInstall()">
-            Start Installation
-          </button>
+        <div class="bbar-right">
+          <button class="btn" type="button" id="btnBack">Back</button>
+          <button class="btn primary" type="button" id="btnNext">Next</button>
         </div>
+      </footer>
+
+      <!-- toast -->
+      <div class="toast" id="toast" role="status" aria-live="polite">
+        <div class="toast-dot"></div>
+        <div class="toast-text" id="toastText">—</div>
       </div>
     </section>
   </main>
 
   <script>
-    // Remove loading screen quando carregar
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-      }, 1000);
-      
-      // Atualiza ano atual
-      document.getElementById('year').textContent = new Date().getFullYear();
-    });
-    
-    function startInstall() {
-      alert('Installation starting... (Backend is already running)');
+    // --- electron ipc (se nodeIntegration=true e contextIsolation=false)
+    let ipc = null;
+    try {
+      const { ipcRenderer } = require('electron');
+      ipc = ipcRenderer;
+    } catch (_) {
+      // rodando fora do electron / preview
     }
-    
-    // Controles da janela
-    document.querySelectorAll('[data-action^="win:"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const action = e.target.closest('button').dataset.action;
-        if (action === 'win:close') {
-          if (confirm('Close window? Background process will continue running.')) {
-            window.close();
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    const state = {
+      step: 'welcome',
+      steps: ['welcome','path','install','finish'],
+      installing: false,
+      installed: false,
+      progress: 0,
+      timer: null,
+    };
+
+    function toast(msg) {
+      const el = $('#toast');
+      $('#toastText').textContent = msg;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function setStep(step) {
+      if (!state.steps.includes(step)) return;
+
+      // travas
+      if (state.installing && step !== 'install') return;
+      if (!state.installed && step === 'finish') return;
+
+      state.step = step;
+
+      // views
+      $$('.view').forEach(v => v.classList.remove('show'));
+      $('#view-' + step).classList.add('show');
+
+      // rail steps
+      $$('.step').forEach(btn => {
+        const isActive = btn.dataset.step === step;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-current', isActive ? 'step' : 'false');
+      });
+
+      // bottom buttons
+      const idx = state.steps.indexOf(step);
+      $('#btnBack').disabled = (idx === 0) || state.installing;
+      $('#btnCancel').disabled = state.installing;
+      $('#btnNext').textContent = step === 'finish' ? 'Close' : (step === 'install' ? 'Installing…' : 'Next');
+      $('#btnNext').disabled = state.installing && step === 'install';
+
+      // sync final path
+      $('#finalPath').textContent = $('#installPath')?.value || '—';
+    }
+
+    function nextStep() {
+      if (state.step === 'finish') {
+        // fechar via IPC (se tiver), senão window.close
+        if (ipc) ipc.send('win-close');
+        else window.close();
+        return;
+      }
+
+      if (state.step === 'path') {
+        // validação simples
+        const p = $('#installPath').value.trim();
+        if (!p) return toast('Pick a valid install folder.');
+      }
+
+      if (state.step === 'install') return;
+
+      const idx = state.steps.indexOf(state.step);
+      const next = state.steps[idx + 1];
+      if (!next) return;
+
+      // ao entrar no install, start
+      if (next === 'install') {
+        setStep('install');
+        startInstall();
+        return;
+      }
+
+      setStep(next);
+    }
+
+    function backStep() {
+      if (state.installing) return;
+      const idx = state.steps.indexOf(state.step);
+      const prev = state.steps[idx - 1];
+      if (prev) setStep(prev);
+    }
+
+    function log(line) {
+      const box = $('#logBox');
+      box.textContent += line + '\n';
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function setProgress(pct, meta, speed) {
+      state.progress = Math.max(0, Math.min(100, pct));
+      $('#progressPct').textContent = state.progress.toFixed(0) + '%';
+      $('#progressFill').style.width = state.progress + '%';
+      $('#progressMeta').textContent = meta || '';
+      $('#progressSpeed').textContent = speed || '—';
+    }
+
+    function startInstall() {
+      if (state.installing) return;
+
+      state.installing = true;
+      state.installed = false;
+
+      $('#btnNext').disabled = true;
+      $('#btnBack').disabled = true;
+      $('#btnCancel').disabled = false;
+      $('#installStatus').textContent = 'Installing Big Walk…';
+
+      $('#logBox').textContent = '';
+      setProgress(0, 'Starting', '—');
+
+      toast('Installation started');
+      log('[setup] starting installer');
+      log('[setup] target: ' + ($('#installPath').value || 'unknown'));
+      log('[setup] preparing files…');
+
+      let phase = 0;
+
+      state.timer = setInterval(() => {
+        // simulação bonitinha
+        const bump = 2 + Math.random() * 6;
+        const next = Math.min(100, state.progress + bump);
+
+        if (phase === 0 && next > 18) {
+          phase = 1;
+          log('[setup] extracting package…');
+        } else if (phase === 1 && next > 55) {
+          phase = 2;
+          log('[setup] copying files…');
+        } else if (phase === 2 && next > 78) {
+          phase = 3;
+          log('[setup] creating shortcuts…');
+        } else if (phase === 3 && next > 92) {
+          phase = 4;
+          log('[setup] finalizing…');
+        }
+
+        const speed = (60 + Math.random()*140).toFixed(0) + ' MB/s';
+        const meta =
+          next < 25 ? 'Preparing files' :
+          next < 60 ? 'Extracting / copying' :
+          next < 90 ? 'Writing to disk' :
+          'Finalizing';
+
+        setProgress(next, meta, speed);
+
+        if (Math.random() < 0.25) {
+          const items = [
+            'writing chunk to disk',
+            'verifying hash',
+            'registering uninstall entry',
+            'checking prerequisites',
+            'optimizing assets'
+          ];
+          log('[setup] ' + items[(Math.random() * items.length) | 0] + '…');
+        }
+
+        if (next >= 100) {
+          clearInterval(state.timer);
+          state.timer = null;
+
+          state.installing = false;
+          state.installed = true;
+
+          log('[setup] done');
+          $('#installStatus').textContent = 'Done.';
+          toast('Installed successfully');
+
+          // habilita finish
+          $('#btnNext').disabled = false;
+          $('#btnCancel').disabled = false;
+
+          setStep('finish');
+          $('#btnNext').textContent = 'Close';
+        }
+      }, 230);
+    }
+
+    // --- init
+    document.addEventListener('DOMContentLoaded', () => {
+      $('#year').textContent = new Date().getFullYear();
+
+      // rail click
+      $$('.step').forEach(btn => {
+        btn.addEventListener('click', () => setStep(btn.dataset.step));
+      });
+
+      // bottom buttons
+      $('#btnNext').addEventListener('click', nextStep);
+      $('#btnBack').addEventListener('click', backStep);
+
+      $('#btnCancel').addEventListener('click', () => {
+        if (state.installing) {
+          const ok = confirm('Cancel installation?');
+          if (!ok) return;
+
+          clearInterval(state.timer);
+          state.timer = null;
+          state.installing = false;
+          setProgress(0, 'Canceled', '—');
+          log('[setup] canceled by user');
+          toast('Canceled');
+          setStep('path');
+          return;
+        }
+
+        // se não tá instalando, só fecha
+        if (ipc) ipc.send('win-close');
+        else window.close();
+      });
+
+      $('#btnBrowse').addEventListener('click', async () => {
+        // ideal: ipc.invoke('pick-install-dir')
+        // aqui fica fallback mock
+        if (ipc && ipc.invoke) {
+          try {
+            const picked = await ipc.invoke('pick-install-dir');
+            if (picked) {
+              $('#installPath').value = picked;
+              toast('Folder selected');
+            }
+          } catch {
+            toast('Browse not available');
           }
+        } else {
+          toast('Browse needs Electron IPC');
         }
       });
+
+      $('#btnCopyLog').addEventListener('click', async () => {
+        const txt = $('#logBox').textContent;
+        try {
+          await navigator.clipboard.writeText(txt);
+          toast('Copied');
+        } catch {
+          toast('Copy failed');
+        }
+      });
+
+      $('#btnClearLog').addEventListener('click', () => {
+        $('#logBox').textContent = '';
+        toast('Cleared');
+      });
+
+      // titlebar window buttons
+      $$('.winbtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const a = btn.dataset.win;
+          if (!ipc) return;
+
+          if (a === 'minimize') ipc.send('win-minimize');
+          if (a === 'maximize') ipc.send('win-maximize');
+          if (a === 'close') ipc.send('win-close');
+        });
+      });
+
+      // start default
+      setStep('welcome');
     });
   </script>
 </body>
