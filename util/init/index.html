@@ -1,1 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; script-src 'self';" />
+  <title>Big Walk Setup</title>
 
+  <!-- optional: if you have a local font, drop it in assets/fonts and wire it in styles.css -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- window chrome (custom title bar) -->
+  <header class="titlebar" role="banner">
+    <div class="titlebar-left">
+      <div class="appmark" aria-hidden="true">
+        <img src="assets/favicon.png" alt="" />
+      </div>
+      <div class="titlewrap">
+        <div class="title">Big Walk Setup</div>
+        <div class="subtitle">Installer</div>
+      </div>
+    </div>
+
+    <div class="titlebar-right" role="group" aria-label="Window controls">
+      <button class="winbtn" type="button" aria-label="Minimize" data-action="win:minimize">
+        <span aria-hidden="true">—</span>
+      </button>
+      <button class="winbtn" type="button" aria-label="Maximize" data-action="win:maximize">
+        <span aria-hidden="true">▢</span>
+      </button>
+      <button class="winbtn danger" type="button" aria-label="Close" data-action="win:close">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <!-- left rail -->
+    <aside class="rail" aria-label="Installer steps">
+      <div class="rail-top">
+        <div class="product">
+          <div class="product-name">Big Walk</div>
+          <div class="product-meta">
+            <span class="pill">beta</span>
+            <span class="sep" aria-hidden="true">•</span>
+            <span class="muted">windows</span>
+          </div>
+        </div>
+
+        <nav class="steps" aria-label="Steps">
+          <button class="step active" type="button" id="stepWelcome" data-step="welcome" aria-current="step">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="label">Welcome</span>
+            <span class="hint">Quick checks</span>
+          </button>
+
+          <button class="step" type="button" id="stepPath" data-step="path">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="label">Install Location</span>
+            <span class="hint">Choose folder</span>
+          </button>
+
+          <button class="step" type="button" id="stepInstall" data-step="install">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="label">Install</span>
+            <span class="hint">Copying files</span>
+          </button>
+
+          <button class="step" type="button" id="stepFinish" data-step="finish">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="label">Finish</span>
+            <span class="hint">Launch options</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="rail-bottom">
+        <div class="rail-card">
+          <div class="rail-k">Version</div>
+          <div class="rail-v" id="versionText">0.0.0-beta</div>
+        </div>
+        <div class="rail-card">
+          <div class="rail-k">Publisher</div>
+          <div class="rail-v">House House Studio</div>
+        </div>
+        <div class="rail-fine" id="legalFine">
+          © <span id="year">2026</span> House House Studio. All rights reserved.
+        </div>
+      </div>
+    </aside>
+
+    <!-- main content -->
+    <section class="panel" aria-label="Installer content">
+      <!-- welcome -->
+      <div class="view show" id="viewWelcome" data-view="welcome" role="region" aria-label="Welcome">
+        <div class="hero">
+          <div class="hero-copy">
+            <h1>Install Big Walk</h1>
+            <p class="lead">
+              This is a beta build. Expect updates, changes, and occasional weirdness.
+              You can change the install folder, create shortcuts, and start right after install.
+            </p>
+
+            <div class="checks">
+              <div class="check">
+                <div class="check-icon" aria-hidden="true">✔</div>
+                <div class="check-body">
+                  <div class="check-title">Disk space</div>
+                  <div class="check-sub muted"><span id="diskReq">~2.4 GB</span> required</div>
+                </div>
+              </div>
+
+              <div class="check">
+                <div class="check-icon" aria-hidden="true">✔</div>
+                <div class="check-body">
+                  <div class="check-title">Permissions</div>
+                  <div class="check-sub muted">Standard user supported</div>
+                </div>
+              </div>
+
+              <div class="check">
+                <div class="check-icon" aria-hidden="true">✔</div>
+                <div class="check-body">
+                  <div class="check-title">Integrity</div>
+                  <div class="check-sub muted">Installer package verified</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-art" aria-hidden="true">
+            <div class="badge">
+              <div class="badge-title">big walk</div>
+              <div class="badge-sub">setup</div>
+            </div>
+            <div class="orb"></div>
+            <div class="grid"></div>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <label class="toggle">
+            <input type="checkbox" id="toggleEula" />
+            <span class="toggle-ui" aria-hidden="true"></span>
+            <span class="toggle-text">
+              I accept the <button class="link" type="button" data-action="open:eula">EULA</button>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- path -->
+      <div class="view" id="viewPath" data-view="path" role="region" aria-label="Install Location">
+        <h2>Choose Install Location</h2>
+        <p class="muted">
+          Pick where Big Walk should be installed. You can keep the default path.
+        </p>
+
+        <div class="field">
+          <label class="field-label" for="installPath">Install folder</label>
+          <div class="field-row">
+            <input id="installPath" class="input" type="text"
+                   value="C:\Program Files\Big Walk" spellcheck="false" />
+            <button class="btn" type="button" data-action="pick:path">Browse…</button>
+          </div>
+          <div class="field-help muted" id="pathHint">
+            Tip: use an SSD if possible for better load times.
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="card">
+            <div class="card-title">Options</div>
+            <label class="checkbox">
+              <input type="checkbox" id="shortcutDesktop" checked />
+              <span>Create desktop shortcut</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="shortcutStart" checked />
+              <span>Create Start Menu entry</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="autoUpdate" />
+              <span>Enable beta auto-updates</span>
+            </label>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Space</div>
+            <div class="kv">
+              <div class="k muted">Required</div>
+              <div class="v" id="spaceReq">2.4 GB</div>
+            </div>
+            <div class="kv">
+              <div class="k muted">Available</div>
+              <div class="v" id="spaceAvail">—</div>
+            </div>
+            <div class="barmini" aria-hidden="true">
+              <span class="fill" style="width: 40%"></span>
+            </div>
+            <div class="muted small">
+              Available space is detected by the installer backend (ipc).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- install -->
+      <div class="view" id="viewInstall" data-view="install" role="region" aria-label="Install">
+        <h2>Installing</h2>
+        <p class="muted" id="installStatus">
+          Preparing…
+        </p>
+
+        <div class="progress">
+          <div class="progress-top">
+            <div class="progress-label" id="progressLabel">Copying files</div>
+            <div class="progress-pct" id="progressPct">0%</div>
+          </div>
+          <div class="progressbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progressfill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-meta muted">
+            <span id="progressMetaLeft">0 / 0 files</span>
+            <span class="sep" aria-hidden="true">•</span>
+            <span id="progressMetaRight">0 MB/s</span>
+          </div>
+        </div>
+
+        <div class="logwrap">
+          <div class="loghead">
+            <div class="logtitle">Details</div>
+            <div class="logactions">
+              <button class="btn ghost" type="button" data-action="copy:log">Copy</button>
+              <button class="btn ghost" type="button" data-action="clear:log">Clear</button>
+            </div>
+          </div>
+          <pre class="log" id="installLog" aria-label="Install log">
+[setup] ready
+          </pre>
+        </div>
+      </div>
+
+      <!-- finish -->
+      <div class="view" id="viewFinish" data-view="finish" role="region" aria-label="Finish">
+        <div class="finish">
+          <div class="finish-badge" aria-hidden="true">✔</div>
+          <h2>Installed</h2>
+          <p class="muted">
+            Big Walk is installed. You can launch now or close the installer.
+          </p>
+
+          <div class="finish-actions">
+            <label class="checkbox big">
+              <input type="checkbox" id="launchNow" checked />
+              <span>Launch Big Walk</span>
+            </label>
+            <label class="checkbox big">
+              <input type="checkbox" id="openFolder" />
+              <span>Open install folder</span>
+            </label>
+          </div>
+
+          <div class="finish-card">
+            <div class="kv">
+              <div class="k muted">Install path</div>
+              <div class="v mono" id="finalPath">C:\Program Files\Big Walk</div>
+            </div>
+            <div class="kv">
+              <div class="k muted">Status</div>
+              <div class="v" id="finalStatus">Success</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- bottom bar -->
+      <footer class="bbar" role="contentinfo">
+        <div class="bbar-left">
+          <button class="btn ghost" type="button" id="backBtn" data-action="nav:back">Back</button>
+          <button class="btn ghost" type="button" id="cancelBtn" data-action="nav:cancel">Cancel</button>
+        </div>
+
+        <div class="bbar-right">
+          <button class="btn" type="button" id="nextBtn" data-action="nav:next">Next</button>
+          <button class="btn primary" type="button" id="installBtn" data-action="install:start">Install</button>
+          <button class="btn primary" type="button" id="finishBtn" data-action="finish:done">Finish</button>
+        </div>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>
