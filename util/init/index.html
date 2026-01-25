@@ -451,10 +451,10 @@ function startInstall() {
   setProgress(0, 'Starting', '—');
 
   toast('Installation started');
-  log('[setup] starting installer');
-  log('[setup] target: ' + ($('#installPath').value || 'unknown'));
-  log(`[setup] package size: ${REQUIRED_GB.toFixed(1)} GB`);
-  log(`[setup] estimated time: ${Math.round(durationSec / 60)} min`);
+  log('[*] starting installer');
+  log('[*] target: ' + ($('#installPath').value || 'unknown'));
+  log(`[*] package size: ${REQUIRED_GB.toFixed(1)} GB`);
+  log(`[*] estimated time: ${Math.round(durationSec / 60)} min`);
 
   let phase = 0;
   let lastLogAt = 0;
@@ -470,11 +470,11 @@ function startInstall() {
     const doneBytes = REQUIRED_BYTES * t;
 
     // define fases por % (só pra log/meta parecer real)
-    if (phase === 0 && pct > 3)  { phase = 1; log('[setup] initializing download…'); }
-    if (phase === 1 && pct > 12) { phase = 2; log('[setup] downloading package…'); }
-    if (phase === 2 && pct > 72) { phase = 3; log('[setup] verifying + extracting…'); }
-    if (phase === 3 && pct > 90) { phase = 4; log('[setup] installing files…'); }
-    if (phase === 4 && pct > 97) { phase = 5; log('[setup] finalizing…'); }
+    if (phase === 0 && pct > 3)  { phase = 1; log('[*] initializing download…'); }
+    if (phase === 1 && pct > 12) { phase = 2; log('[*] downloading package…'); }
+    if (phase === 2 && pct > 72) { phase = 3; log('[*] verifying + extracting…'); }
+    if (phase === 3 && pct > 90) { phase = 4; log('[*] installing files…'); }
+    if (phase === 4 && pct > 97) { phase = 5; log('[*] finalizing…'); }
 
     // velocidade: fica perto da média, com variação leve
     // (e ainda respeita a duração pq a % vem do tempo)
@@ -504,7 +504,7 @@ function startInstall() {
         'optimizing assets…',
         'updating registry entries…',
       ];
-      log('[setup] ' + items[(Math.random() * items.length) | 0]);
+      log('[*] ' + items[(Math.random() * items.length) | 0]);
     }
 
     lastT = t;
@@ -517,7 +517,7 @@ function startInstall() {
       state.installed = true;
 
       setProgress(100, `Done (${REQUIRED_GB.toFixed(1)} GB)`, fmtMBps(avgRateMBps));
-      log('[setup] done');
+      log('[*] done!');
       $('#installStatus').textContent = 'Done.';
       toast('Installed successfully');
 
