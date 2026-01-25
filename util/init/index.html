@@ -74,7 +74,7 @@
             </div>
             <div class="kv">
               <span class="k">Required space</span>
-              <span class="v" id="diskReq">~2.4 GB</span>
+              <span class="v" id="diskReq">~6.2 GB</span>
             </div>
           </div>
         </section>
@@ -103,7 +103,7 @@
                   <div class="card-ico ok">✔</div>
                   <div class="card-body">
                     <div class="card-title">Disk space</div>
-                    <div class="card-sub"><span class="mono" id="diskReq2">~2.4 GB</span> required</div>
+                    <div class="card-sub"><span class="mono" id="diskReq2">~6.2 GB</span> required</div>
                   </div>
                 </div>
 
@@ -182,7 +182,7 @@
 
             <div class="panel-card">
               <div class="panel-card-title">Summary</div>
-              <div class="kv"><span class="k">Size</span><span class="v">2.4 GB</span></div>
+              <div class="kv"><span class="k">Size</span><span class="v">6.2 GB</span></div>
               <div class="kv"><span class="k">Architecture</span><span class="v">x64</span></div>
               <div class="kv"><span class="k">Install for</span><span class="v">Current user</span></div>
               <div class="divider"></div>
@@ -388,64 +388,145 @@
       $('#progressSpeed').textContent = speed || '—';
     }
 
-    function startInstall() {
-      if (state.installing) return;
+    // ====== config de tamanho/tempo (simulação realista) ======
+const REQUIRED_GB = 6.2;
+const REQUIRED_BYTES = REQUIRED_GB * 1024 * 1024 * 1024;
 
-      state.installing = true;
-      state.installed = false;
+// 5–8 minutos
+const INSTALL_MIN_MS = 5 * 60 * 1000;
+const INSTALL_MAX_MS = 8 * 60 * 1000;
 
-      $('#installStatus').textContent = 'Installing Big Walk…';
-      $('#logBox').textContent = '';
-      setProgress(0, 'Starting', '—');
+function fmtGB(bytes) {
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+}
+function fmtMBps(mbps) {
+  return mbps.toFixed(1) + " MB/s";
+}
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
 
-      toast('Installation started');
-      log('[setup] starting installer');
-      log('[setup] target: ' + ($('#installPath').value || 'unknown'));
-      log('[setup] preparing files…');
-
-      let phase = 0;
-
-      state.timer = setInterval(() => {
-        const bump = 2 + Math.random() * 6;
-        const next = Math.min(100, state.progress + bump);
-
-        if (phase === 0 && next > 18) { phase = 1; log('[setup] extracting package…'); }
-        else if (phase === 1 && next > 55) { phase = 2; log('[setup] copying files…'); }
-        else if (phase === 2 && next > 78) { phase = 3; log('[setup] creating shortcuts…'); }
-        else if (phase === 3 && next > 92) { phase = 4; log('[setup] finalizing…'); }
-
-        const speed = (60 + Math.random()*140).toFixed(0) + ' MB/s';
-        const meta =
-          next < 25 ? 'Preparing files' :
-          next < 60 ? 'Extracting / copying' :
-          next < 90 ? 'Writing to disk' :
-          'Finalizing';
-
-        setProgress(next, meta, speed);
-
-        if (Math.random() < 0.25) {
-          const items = ['writing chunk to disk','verifying hash','registering uninstall entry','checking prerequisites','optimizing assets'];
-          log('[setup] ' + items[(Math.random() * items.length) | 0] + '…');
-        }
-
-        if (next >= 100) {
-          clearInterval(state.timer);
-          state.timer = null;
-
-          state.installing = false;
-          state.installed = true;
-
-          log('[setup] done');
-          $('#installStatus').textContent = 'Done.';
-          toast('Installed successfully');
-
-          // ✅ só agora “nasce” o Finish
-          ensureRailUpTo(state.steps.indexOf('finish'));
-          setStep('finish');
-          $('#btnNext').textContent = 'Close';
-        }
-      }, 230);
+// garante q o texto do tamanho fica certo (mesmo se esquecer no html)
+function applySizeLabels() {
+  const a = document.querySelector('#diskReq');
+  const b = document.querySelector('#diskReq2');
+  if (a) a.textContent = `~${REQUIRED_GB.toFixed(1)} GB`;
+  if (b) b.textContent = `~${REQUIRED_GB.toFixed(1)} GB`;
+  // tenta atualizar o summary "Size" sem precisar id (pega o primeiro "Size" do summary)
+  document.querySelectorAll('.panel-card .kv').forEach(kv => {
+    const k = kv.querySelector('.k');
+    const v = kv.querySelector('.v');
+    if (k && v && k.textContent.trim().toLowerCase() === 'size') {
+      v.textContent = `${REQUIRED_GB.toFixed(1)} GB`;
     }
+  });
+}
+
+// chama isso no DOMContentLoaded (bota junto do que vc já tem)
+document.addEventListener('DOMContentLoaded', () => {
+  applySizeLabels();
+});
+
+// ====== SUBSTITUI A FUNÇÃO startInstall() POR ESSA ======
+function startInstall() {
+  if (state.installing) return;
+
+  state.installing = true;
+  state.installed = false;
+
+  // duração aleatória 5–8 min
+  const durationMs = INSTALL_MIN_MS + Math.random() * (INSTALL_MAX_MS - INSTALL_MIN_MS);
+  const startMs = performance.now();
+
+  // taxa média pra bater a duração (MB/s)
+  const durationSec = durationMs / 1000;
+  const avgRateMBps = (REQUIRED_BYTES / (1024 * 1024)) / durationSec;
+
+  // smooth de velocidade
+  let shownMBps = avgRateMBps;
+  let lastT = 0;
+
+  $('#installStatus').textContent = 'Installing Big Walk…';
+  $('#logBox').textContent = '';
+  setProgress(0, 'Starting', '—');
+
+  toast('Installation started');
+  log('[setup] starting installer');
+  log('[setup] target: ' + ($('#installPath').value || 'unknown'));
+  log(`[setup] package size: ${REQUIRED_GB.toFixed(1)} GB`);
+  log(`[setup] estimated time: ${Math.round(durationSec / 60)} min`);
+
+  let phase = 0;
+  let lastLogAt = 0;
+
+  // tick mais “humano”, sem ficar aceleradão
+  state.timer = setInterval(() => {
+    const now = performance.now();
+    const rawT = Math.min(1, (now - startMs) / durationMs);
+    const t = easeOutCubic(rawT); // sobe mais “bonito”
+    const pct = t * 100;
+
+    // bytes “baixados/instalados” na simulação
+    const doneBytes = REQUIRED_BYTES * t;
+
+    // define fases por % (só pra log/meta parecer real)
+    if (phase === 0 && pct > 3)  { phase = 1; log('[setup] initializing download…'); }
+    if (phase === 1 && pct > 12) { phase = 2; log('[setup] downloading package…'); }
+    if (phase === 2 && pct > 72) { phase = 3; log('[setup] verifying + extracting…'); }
+    if (phase === 3 && pct > 90) { phase = 4; log('[setup] installing files…'); }
+    if (phase === 4 && pct > 97) { phase = 5; log('[setup] finalizing…'); }
+
+    // velocidade: fica perto da média, com variação leve
+    // (e ainda respeita a duração pq a % vem do tempo)
+    const wobble = 0.80 + Math.random() * 0.45; // 0.80–1.25
+    const targetMBps = avgRateMBps * wobble;
+
+    // suaviza pra não ficar pulando demais
+    shownMBps = shownMBps * 0.82 + targetMBps * 0.18;
+
+    // meta bonitinha com progresso em GB
+    const meta =
+      pct < 12 ? `Preparing (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)` :
+      pct < 72 ? `Downloading (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)` :
+      pct < 90 ? `Extracting (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)` :
+      pct < 97 ? `Installing (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)` :
+      `Finalizing (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)`;
+
+    setProgress(pct, meta, fmtMBps(shownMBps));
+
+    // solta logs “de vez em quando”
+    if ((now - lastLogAt) > (2200 + Math.random() * 1800) && pct < 99.5) {
+      lastLogAt = now;
+      const items = [
+        `received chunk (${fmtGB(doneBytes)} / ${REQUIRED_GB.toFixed(1)} GB)`,
+        'checking checksum…',
+        'writing to disk…',
+        'optimizing assets…',
+        'updating registry entries…',
+      ];
+      log('[setup] ' + items[(Math.random() * items.length) | 0]);
+    }
+
+    lastT = t;
+
+    if (rawT >= 1) {
+      clearInterval(state.timer);
+      state.timer = null;
+
+      state.installing = false;
+      state.installed = true;
+
+      setProgress(100, `Done (${REQUIRED_GB.toFixed(1)} GB)`, fmtMBps(avgRateMBps));
+      log('[setup] done');
+      $('#installStatus').textContent = 'Done.';
+      toast('Installed successfully');
+
+      ensureRailUpTo(state.steps.indexOf('finish'));
+      setStep('finish');
+      $('#btnNext').textContent = 'Close';
+    }
+  }, 350);
+}
 
     function nextStep() {
       if (state.step === 'finish') {
