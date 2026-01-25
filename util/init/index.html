@@ -7,17 +7,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Big Walk Setup</title>
 
-  <!-- se tu quiser fonte externa, pode botar aqui, mas recomendo ficar no Segoe UI (nativo do windows) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- o electron vai injetar o styles.css como <style> no teu loader -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-  <!-- background blobs -->
-  <div class="bg">
+  <!-- background (wallpaper + blur + overlay) -->
+  <div class="bg" aria-hidden="true">
+    <div class="wallpaper"></div>
+    <div class="vignette"></div>
     <div class="blob b1"></div>
     <div class="blob b2"></div>
     <div class="grain"></div>
@@ -331,14 +328,12 @@
   </main>
 
   <script>
-    // --- electron ipc (se nodeIntegration=true e contextIsolation=false)
+    // --- electron ipc (nodeIntegration=true + contextIsolation=false)
     let ipc = null;
     try {
       const { ipcRenderer } = require('electron');
       ipc = ipcRenderer;
-    } catch (_) {
-      // rodando fora do electron / preview
-    }
+    } catch (_) {}
 
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -362,45 +357,37 @@
 
     function setStep(step) {
       if (!state.steps.includes(step)) return;
-
-      // travas
       if (state.installing && step !== 'install') return;
       if (!state.installed && step === 'finish') return;
 
       state.step = step;
 
-      // views
       $$('.view').forEach(v => v.classList.remove('show'));
       $('#view-' + step).classList.add('show');
 
-      // rail steps
       $$('.step').forEach(btn => {
         const isActive = btn.dataset.step === step;
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-current', isActive ? 'step' : 'false');
       });
 
-      // bottom buttons
       const idx = state.steps.indexOf(step);
       $('#btnBack').disabled = (idx === 0) || state.installing;
       $('#btnCancel').disabled = state.installing;
       $('#btnNext').textContent = step === 'finish' ? 'Close' : (step === 'install' ? 'Installing…' : 'Next');
       $('#btnNext').disabled = state.installing && step === 'install';
 
-      // sync final path
       $('#finalPath').textContent = $('#installPath')?.value || '—';
     }
 
     function nextStep() {
       if (state.step === 'finish') {
-        // fechar via IPC (se tiver), senão window.close
         if (ipc) ipc.send('win-close');
         else window.close();
         return;
       }
 
       if (state.step === 'path') {
-        // validação simples
         const p = $('#installPath').value.trim();
         if (!p) return toast('Pick a valid install folder.');
       }
@@ -411,7 +398,6 @@
       const next = state.steps[idx + 1];
       if (!next) return;
 
-      // ao entrar no install, start
       if (next === 'install') {
         setStep('install');
         startInstall();
@@ -464,23 +450,13 @@
       let phase = 0;
 
       state.timer = setInterval(() => {
-        // simulação bonitinha
         const bump = 2 + Math.random() * 6;
         const next = Math.min(100, state.progress + bump);
 
-        if (phase === 0 && next > 18) {
-          phase = 1;
-          log('[setup] extracting package…');
-        } else if (phase === 1 && next > 55) {
-          phase = 2;
-          log('[setup] copying files…');
-        } else if (phase === 2 && next > 78) {
-          phase = 3;
-          log('[setup] creating shortcuts…');
-        } else if (phase === 3 && next > 92) {
-          phase = 4;
-          log('[setup] finalizing…');
-        }
+        if (phase === 0 && next > 18) { phase = 1; log('[setup] extracting package…'); }
+        else if (phase === 1 && next > 55) { phase = 2; log('[setup] copying files…'); }
+        else if (phase === 2 && next > 78) { phase = 3; log('[setup] creating shortcuts…'); }
+        else if (phase === 3 && next > 92) { phase = 4; log('[setup] finalizing…'); }
 
         const speed = (60 + Math.random()*140).toFixed(0) + ' MB/s';
         const meta =
@@ -513,7 +489,6 @@
           $('#installStatus').textContent = 'Done.';
           toast('Installed successfully');
 
-          // habilita finish
           $('#btnNext').disabled = false;
           $('#btnCancel').disabled = false;
 
@@ -523,16 +498,11 @@
       }, 230);
     }
 
-    // --- init
     document.addEventListener('DOMContentLoaded', () => {
       $('#year').textContent = new Date().getFullYear();
 
-      // rail click
-      $$('.step').forEach(btn => {
-        btn.addEventListener('click', () => setStep(btn.dataset.step));
-      });
+      $$('.step').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.step)));
 
-      // bottom buttons
       $('#btnNext').addEventListener('click', nextStep);
       $('#btnBack').addEventListener('click', backStep);
 
@@ -551,14 +521,11 @@
           return;
         }
 
-        // se não tá instalando, só fecha
         if (ipc) ipc.send('win-close');
         else window.close();
       });
 
       $('#btnBrowse').addEventListener('click', async () => {
-        // ideal: ipc.invoke('pick-install-dir')
-        // aqui fica fallback mock
         if (ipc && ipc.invoke) {
           try {
             const picked = await ipc.invoke('pick-install-dir');
@@ -576,12 +543,8 @@
 
       $('#btnCopyLog').addEventListener('click', async () => {
         const txt = $('#logBox').textContent;
-        try {
-          await navigator.clipboard.writeText(txt);
-          toast('Copied');
-        } catch {
-          toast('Copy failed');
-        }
+        try { await navigator.clipboard.writeText(txt); toast('Copied'); }
+        catch { toast('Copy failed'); }
       });
 
       $('#btnClearLog').addEventListener('click', () => {
@@ -589,7 +552,7 @@
         toast('Cleared');
       });
 
-      // titlebar window buttons
+      // window buttons
       $$('.winbtn').forEach(btn => {
         btn.addEventListener('click', () => {
           const a = btn.dataset.win;
@@ -601,7 +564,6 @@
         });
       });
 
-      // start default
       setStep('welcome');
     });
   </script>
