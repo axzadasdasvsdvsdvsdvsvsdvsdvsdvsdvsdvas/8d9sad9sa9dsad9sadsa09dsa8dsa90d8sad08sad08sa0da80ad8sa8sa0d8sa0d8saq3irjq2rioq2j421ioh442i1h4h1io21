@@ -477,7 +477,16 @@
       // CANCEL: confirma e esconde as janelas
       $('#btnCancel').addEventListener('click', cancelAndHide);
 
-      $('#btnBrowse').addEventListener('click', async () => toast('Browse needs Electron IPC'));
+      $('#btnBrowse').addEventListener('click', async () => {
+        if (!ipc) return toast('Browse unavailable (no IPC).');
+
+        const cur = $('#installPath')?.value || '';
+        const picked = await ipc.invoke('ui:browseFolder', cur);
+
+        if (!picked) return; // cancelou
+        $('#installPath').value = picked;
+        toast('Folder selected');
+      });
       $('#btnCopyLog').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText($('#logBox').textContent); toast('Copied'); }
         catch { toast('Copy failed'); }
