@@ -474,7 +474,7 @@ function startInstall() {
     if (phase === 1 && pct > 12) { phase = 2; log('[*] downloading package…'); }
     if (phase === 2 && pct > 72) { phase = 3; log('[*] verifying + extracting…'); }
     if (phase === 3 && pct > 90) { phase = 4; log('[*] installing files…'); }
-    if (phase === 4 && pct > 97) { phase = 5; log('[*] finalizing…'); }
+    if (phase === 4 && pct > 97) { phase = 5; log('[#] finalizing…'); }
 
     // velocidade: fica perto da média, com variação leve
     // (e ainda respeita a duração pq a % vem do tempo)
@@ -517,7 +517,7 @@ function startInstall() {
       state.installed = true;
 
       setProgress(100, `Done (${REQUIRED_GB.toFixed(1)} GB)`, fmtMBps(avgRateMBps));
-      log('[*] done!');
+      log('[+] done!');
       $('#installStatus').textContent = 'Done.';
       toast('Installed successfully');
 
