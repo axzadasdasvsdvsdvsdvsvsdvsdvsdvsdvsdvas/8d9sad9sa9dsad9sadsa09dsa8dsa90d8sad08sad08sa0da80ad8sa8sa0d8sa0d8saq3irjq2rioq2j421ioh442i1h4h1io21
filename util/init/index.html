@@ -19,15 +19,15 @@
 
   <header class="titlebar" role="banner">
     <div class="titlebar-left">
-  <div class="appmark" aria-hidden="true">
-    <img class="app-ico" src="./assets/favicon.png" alt="" />
-  </div>
+      <div class="appmark" aria-hidden="true">
+        <img class="app-ico" src="./assets/favicon.png" alt="" />
+      </div>
 
-  <div class="titlewrap">
-    <div class="title">Big Walk Installer</div>
-    <div class="subtitle">House House | beta</div>
-  </div>
-</div>
+      <div class="titlewrap">
+        <div class="title">Big Walk Installer</div>
+        <div class="subtitle">House House | beta</div>
+      </div>
+    </div>
 
     <div class="titlebar-right" role="group" aria-label="Window controls">
       <button class="winbtn" type="button" aria-label="Minimize" data-win="minimize" title="Minimize">
@@ -62,31 +62,8 @@
           </div>
         </section>
 
-        <nav class="steps" aria-label="Steps">
-          <button class="step active" type="button" data-step="welcome" aria-current="step">
-            <span class="dot"></span>
-            <span class="label">Welcome</span>
-            <span class="hint">Quick checks</span>
-          </button>
-
-          <button class="step" type="button" data-step="path">
-            <span class="dot"></span>
-            <span class="label">Location</span>
-            <span class="hint">Choose folder</span>
-          </button>
-
-          <button class="step" type="button" data-step="install">
-            <span class="dot"></span>
-            <span class="label">Install</span>
-            <span class="hint">Copying files</span>
-          </button>
-
-          <button class="step" type="button" data-step="finish">
-            <span class="dot"></span>
-            <span class="label">Finish</span>
-            <span class="hint">Launch options</span>
-          </button>
-        </nav>
+        <!-- ✅ AGORA OS BOTOES VAO SER CRIADOS VIA JS -->
+        <nav class="steps" id="stepsNav" aria-label="Steps"></nav>
 
         <section class="rail-card">
           <div class="rail-card-title">System</div>
@@ -303,9 +280,17 @@
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
 
+    const stepsDef = [
+      { key: 'welcome', label: 'Welcome',  hint: 'Quick checks' },
+      { key: 'path',    label: 'Location', hint: 'Choose folder' },
+      { key: 'install', label: 'Install',  hint: 'Copying files' },
+      { key: 'finish',  label: 'Finish',   hint: 'Launch options' },
+    ];
+
     const state = {
       step: 'welcome',
-      steps: ['welcome','path','install','finish'],
+      steps: stepsDef.map(s => s.key),
+      unlocked: 0,       // ✅ até qual index já “nasceu” no rail
       installing: false,
       installed: false,
       progress: 0,
@@ -320,29 +305,73 @@
       el._t = setTimeout(() => el.classList.remove('show'), 2200);
     }
 
+    // ✅ cria os botões conforme desbloqueia
+    function ensureRailUpTo(index) {
+      const nav = $('#stepsNav');
+      if (!nav) return;
+
+      const target = Math.max(0, Math.min(stepsDef.length - 1, index));
+
+      // cria só os que faltam
+      while (nav.children.length <= target) {
+        const i = nav.children.length;
+        const s = stepsDef[i];
+
+        const btn = document.createElement('button');
+        btn.className = 'step';
+        btn.type = 'button';
+        btn.dataset.step = s.key;
+
+        btn.innerHTML = `
+          <span class="dot"></span>
+          <span class="label">${s.label}</span>
+          <span class="hint">${s.hint}</span>
+        `;
+
+        // clicável só se já “nasceu” e não tá instalando
+        btn.addEventListener('click', () => {
+          if (state.installing) return;
+          const idx = state.steps.indexOf(s.key);
+          if (idx <= state.unlocked) setStep(s.key);
+        });
+
+        nav.appendChild(btn);
+      }
+
+      state.unlocked = Math.max(state.unlocked, target);
+    }
+
     function setStep(step) {
       if (!state.steps.includes(step)) return;
       if (state.installing && step !== 'install') return;
       if (!state.installed && step === 'finish') return;
 
+      const idx = state.steps.indexOf(step);
+      ensureRailUpTo(idx);
+
       state.step = step;
 
+      // views
       $$('.view').forEach(v => v.classList.remove('show'));
-      $('#view-' + step).classList.add('show');
+      const view = $('#view-' + step);
+      if (view) view.classList.add('show');
 
-      $$('.step').forEach(btn => {
+      // rail active
+      $$('#stepsNav .step').forEach(btn => {
         const isActive = btn.dataset.step === step;
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-current', isActive ? 'step' : 'false');
       });
 
-      const idx = state.steps.indexOf(step);
+      // footer buttons
       $('#btnBack').disabled = (idx === 0) || state.installing;
       $('#btnCancel').disabled = false;
       $('#btnNext').textContent = step === 'finish' ? 'Close' : (step === 'install' ? 'Installing…' : 'Next');
       $('#btnNext').disabled = state.installing && step === 'install';
 
-      $('#finalPath').textContent = $('#installPath')?.value || '—';
+      const p = $('#installPath')?.value || '—';
+      const fp = $('#finalPath');
+      if (fp) fp.textContent = p;
     }
 
     function log(line) {
@@ -410,6 +439,8 @@
           $('#installStatus').textContent = 'Done.';
           toast('Installed successfully');
 
+          // ✅ só agora “nasce” o Finish
+          ensureRailUpTo(state.steps.indexOf('finish'));
           setStep('finish');
           $('#btnNext').textContent = 'Close';
         }
@@ -418,7 +449,6 @@
 
     function nextStep() {
       if (state.step === 'finish') {
-        // fecha só a janela do installer
         if (ipc) ipc.send('ui:win', 'close');
         else window.close();
         return;
@@ -434,6 +464,9 @@
       const idx = state.steps.indexOf(state.step);
       const next = state.steps[idx + 1];
       if (!next) return;
+
+      // ✅ faz o próximo “nascer” no rail antes de entrar nele
+      ensureRailUpTo(idx + 1);
 
       if (next === 'install') {
         setStep('install');
@@ -455,14 +488,12 @@
       const ok = confirm('Do you really want to cancel?');
       if (!ok) return;
 
-      // para a simulação se tiver rodando
       if (state.timer) {
         clearInterval(state.timer);
         state.timer = null;
       }
       state.installing = false;
 
-      // esconde todas as janelas (continua em bg)
       if (ipc) ipc.send('ui:app', 'hideAll');
       else window.close();
     }
@@ -470,30 +501,41 @@
     document.addEventListener('DOMContentLoaded', () => {
       $('#year').textContent = new Date().getFullYear();
 
-      $$('.step').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.step)));
+      // ✅ começa com só Welcome no rail
+      ensureRailUpTo(0);
+      setStep('welcome');
+
       $('#btnNext').addEventListener('click', nextStep);
       $('#btnBack').addEventListener('click', backStep);
-
-      // CANCEL: confirma e esconde as janelas
       $('#btnCancel').addEventListener('click', cancelAndHide);
 
+      // Browse real via IPC
       $('#btnBrowse').addEventListener('click', async () => {
         if (!ipc) return toast('Browse unavailable (no IPC).');
 
         const cur = $('#installPath')?.value || '';
-        const picked = await ipc.invoke('ui:browseFolder', cur);
+        let picked = null;
 
-        if (!picked) return; // cancelou
+        try {
+          picked = await ipc.invoke('ui:browseFolder', cur);
+        } catch (e) {
+          console.error(e);
+          toast('Browse failed (IPC error).');
+          return;
+        }
+
+        if (!picked) return;
         $('#installPath').value = picked;
         toast('Folder selected');
       });
+
       $('#btnCopyLog').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText($('#logBox').textContent); toast('Copied'); }
         catch { toast('Copy failed'); }
       });
       $('#btnClearLog').addEventListener('click', () => { $('#logBox').textContent=''; toast('Cleared'); });
 
-      // win buttons (se o inject do main não pegar, isso pega)
+      // win buttons
       $$('.winbtn').forEach(btn => {
         btn.addEventListener('click', () => {
           const a = btn.dataset.win;
@@ -501,8 +543,6 @@
           ipc.send('ui:win', a);
         });
       });
-
-      setStep('welcome');
     });
   </script>
 </body>
